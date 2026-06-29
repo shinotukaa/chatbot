@@ -2,6 +2,12 @@
 
 import { useState, useRef, useEffect } from 'react';
 
+const DEFAULT_CONFIG = {
+  siteName: '市役所AIチャットボット',
+  siteUrl: '',
+  welcomeMessage: 'ご質問をどうぞ。市のWebサイトをGoogle検索でリアルタイムに調べて、丁寧にお答えします。',
+};
+
 function renderMarkdown(text) {
   return text
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -13,20 +19,29 @@ function renderMarkdown(text) {
 }
 
 export default function Home() {
+  const [config, setConfig] = useState(DEFAULT_CONFIG);
+  const [defaultApiUrl, setDefaultApiUrl] = useState('');
   const [messages, setMessages] = useState([]);
-  const [url, setUrl] = useState('');
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
   const chatRef = useRef(null);
 
   useEffect(() => {
-    fetch('/api/default-url').then(r => r.json()).then(d => setUrl(d.url));
+    // Load config from localStorage (set by admin panel)
+    const saved = localStorage.getItem('chatbot_config');
+    if (saved) {
+      try { setConfig(c => ({ ...c, ...JSON.parse(saved) })); } catch (_) {}
+    }
+    // Load default URL from API
+    fetch('/api/default-url').then(r => r.json()).then(d => setDefaultApiUrl(d.url));
   }, []);
 
   useEffect(() => {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
   }, [messages, status]);
+
+  const targetUrl = config.siteUrl || defaultApiUrl;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,12 +60,12 @@ export default function Home() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, url: url || undefined }),
+        body: JSON.stringify({ message, url: targetUrl || undefined }),
       });
 
       if (!res.ok) {
-        const errBody = await res.json().catch(() => ({}));
-        throw new Error(errBody.error || `HTTP ${res.status}`);
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${res.status}`);
       }
 
       const reader = res.body.getReader();
@@ -61,7 +76,6 @@ export default function Home() {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-
         buffer += decoder.decode(value, { stream: true });
         const parts = buffer.split('\n\n');
         buffer = parts.pop();
@@ -107,55 +121,54 @@ export default function Home() {
   };
 
   return (
-    <div className="app">
-      <header className="header">
-        <h1>市役所AIチャットボット</h1>
-        <p className="subtitle">Google検索でWebサイトをリアルタイムに調べてお答えします</p>
+    <div className="chat-layout">
+      <header className="site-header">
+        <div className="header-inner">
+          <div className="header-icon">🏛️</div>
+          <div className="header-text">
+            <h1>{config.siteName}</h1>
+            <p>AIがWebサイトを検索して、ご質問にお答えします</p>
+          </div>
+        </div>
       </header>
 
-      <div className="url-bar">
-        <label htmlFor="url">対象サイト</label>
-        <input
-          id="url"
-          type="url"
-          className="url-input"
-          value={url}
-          onChange={e => setUrl(e.target.value)}
-          placeholder="https://..."
-        />
-      </div>
+      {targetUrl && (
+        <div className="search-info">
+          🔍 検索対象：
+          <a href={targetUrl} target="_blank" rel="noopener noreferrer">{targetUrl}</a>
+        </div>
+      )}
 
-      <div className="chat-container" ref={chatRef}>
-        {messages.length === 0 && (
-          <div className="welcome">
-            <p>ご質問をどうぞ。指定サイトをGoogle検索で調べてお答えします。</p>
-          </div>
-        )}
+      <div className="chat-body" ref={chatRef}>
+        <div className="welcome-card">
+          <strong>ご利用案内</strong><br />
+          {config.welcomeMessage}
+        </div>
+
         {messages.map((m, i) => (
           <div key={i} className={`message ${m.role}`}>
+            <div className="message-label">
+              {m.role === 'user' ? '市民' : 'AIアシスタント'}
+            </div>
             <div
               className="bubble"
-              {...(m.html
-                ? { dangerouslySetInnerHTML: { __html: m.html } }
-                : {})}
+              {...(m.html ? { dangerouslySetInnerHTML: { __html: m.html } } : {})}
             >
               {!m.html && m.text}
             </div>
 
             {m.role === 'assistant' && m.searchEntryPoint && (
-              <div
-                className="search-entry-point"
-                dangerouslySetInnerHTML={{ __html: m.searchEntryPoint }}
-              />
+              <div className="search-entry-point"
+                dangerouslySetInnerHTML={{ __html: m.searchEntryPoint }} />
             )}
 
             {m.role === 'assistant' && m.sources?.length > 0 && (
               <div className="sources-box">
-                <p className="sources-title">参照元:</p>
+                <p className="sources-title">参照元</p>
                 <ul className="sources-list">
                   {m.sources.map(s => (
                     <li key={s.index}>
-                      [{s.index}]{' '}
+                      <span className="idx">[{s.index}]</span>
                       <a href={s.url} target="_blank" rel="noopener noreferrer">{s.title}</a>
                     </li>
                   ))}
@@ -164,6 +177,7 @@ export default function Home() {
             )}
           </div>
         ))}
+
         {status && (
           <div className="status-bar">
             <div className="spinner" />
@@ -172,20 +186,29 @@ export default function Home() {
         )}
       </div>
 
-      <form className="input-form" onSubmit={handleSubmit}>
-        <textarea
-          className="message-input"
-          rows={3}
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => {
-            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(e); }
-          }}
-          placeholder="例: 工事入札の申請資格を教えてください"
-          disabled={loading}
-        />
-        <button type="submit" className="send-btn" disabled={loading}>送信</button>
-      </form>
+      <div className="chat-footer">
+        <form onSubmit={handleSubmit}>
+          <div className="input-row">
+            <textarea
+              className="message-input"
+              rows={3}
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(e); }
+              }}
+              placeholder="例：工事入札の申請資格を教えてください"
+              disabled={loading}
+            />
+            <button type="submit" className="send-btn" disabled={loading}>送信</button>
+          </div>
+          <p className="input-hint">Enterで送信　Shift+Enterで改行</p>
+        </form>
+      </div>
+
+      <footer className="site-footer">
+        本サービスはAIによる自動回答です。最終的な確認は市の公式窓口へお問い合わせください。
+      </footer>
     </div>
   );
 }
