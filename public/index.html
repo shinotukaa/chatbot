@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>市役所AIチャットボット</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1>市役所AIチャットボット</h1>
+      <p class="subtitle">市のWebサイトを検索してお答えします</p>
+    </header>
+
+    <div class="url-bar">
+      <label for="url-input">参照URL</label>
+      <input type="url" id="url-input" placeholder="https://www.city.izumiotsu.lg.jp/index.html" />
+    </div>
+
+    <div class="chat-container" id="chat-container">
+      <div class="welcome-message">
+        <p>ご質問をどうぞ。市のWebサイトをリアルタイムで調べてお答えします。</p>
+      </div>
+    </div>
+
+    <form class="input-form" id="input-form">
+      <textarea
+        id="message-input"
+        placeholder="例: 工事入札の申請資格を教えてください"
+        rows="3"
+      ></textarea>
+      <button type="submit" id="send-btn">送信</button>
+    </form>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
