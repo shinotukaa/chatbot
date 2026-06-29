@@ -36,10 +36,10 @@ export default function Home() {
     setMessages(prev => [...prev, { role: 'user', text: message }]);
     setInput('');
     setLoading(true);
-    setStatus('クロール中...');
+    setStatus('Google検索で情報を取得中...');
 
     const aiIndex = messages.length + 1;
-    setMessages(prev => [...prev, { role: 'assistant', text: '', html: '' }]);
+    setMessages(prev => [...prev, { role: 'assistant', text: '', html: '', sources: [], searchEntryPoint: null }]);
 
     try {
       const res = await fetch('/api/chat', {
@@ -47,6 +47,11 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message, url: url || undefined }),
       });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || `HTTP ${res.status}`);
+      }
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -78,20 +83,23 @@ export default function Home() {
             setMessages(prev => prev.map((m, i) =>
               i === aiIndex ? { ...m, html: renderMarkdown(fullText) } : m
             ));
-          } else if (eventType === 'done' || eventType === 'error') {
+          } else if (eventType === 'done') {
             setStatus('');
-            if (eventType === 'error') {
-              setMessages(prev => prev.map((m, i) =>
-                i === aiIndex ? { ...m, text: `エラー: ${data.message}`, html: '' } : m
-              ));
-            }
+            setMessages(prev => prev.map((m, i) =>
+              i === aiIndex ? { ...m, sources: data.sources || [], searchEntryPoint: data.searchEntryPoint } : m
+            ));
+          } else if (eventType === 'error') {
+            setStatus('');
+            setMessages(prev => prev.map((m, i) =>
+              i === aiIndex ? { ...m, text: `エラー: ${data.message}`, html: '' } : m
+            ));
           }
         }
       }
     } catch (err) {
       setStatus('');
       setMessages(prev => prev.map((m, i) =>
-        i === aiIndex ? { ...m, text: `接続エラー: ${err.message}`, html: '' } : m
+        i === aiIndex ? { ...m, text: `エラー: ${err.message}`, html: '' } : m
       ));
     }
 
@@ -102,11 +110,11 @@ export default function Home() {
     <div className="app">
       <header className="header">
         <h1>市役所AIチャットボット</h1>
-        <p className="subtitle">市のWebサイトを検索してお答えします</p>
+        <p className="subtitle">Google検索でWebサイトをリアルタイムに調べてお答えします</p>
       </header>
 
       <div className="url-bar">
-        <label htmlFor="url">参照URL</label>
+        <label htmlFor="url">対象サイト</label>
         <input
           id="url"
           type="url"
@@ -120,7 +128,7 @@ export default function Home() {
       <div className="chat-container" ref={chatRef}>
         {messages.length === 0 && (
           <div className="welcome">
-            <p>ご質問をどうぞ。市のWebサイトをリアルタイムで調べてお答えします。</p>
+            <p>ご質問をどうぞ。指定サイトをGoogle検索で調べてお答えします。</p>
           </div>
         )}
         {messages.map((m, i) => (
@@ -133,6 +141,27 @@ export default function Home() {
             >
               {!m.html && m.text}
             </div>
+
+            {m.role === 'assistant' && m.searchEntryPoint && (
+              <div
+                className="search-entry-point"
+                dangerouslySetInnerHTML={{ __html: m.searchEntryPoint }}
+              />
+            )}
+
+            {m.role === 'assistant' && m.sources?.length > 0 && (
+              <div className="sources-box">
+                <p className="sources-title">参照元:</p>
+                <ul className="sources-list">
+                  {m.sources.map(s => (
+                    <li key={s.index}>
+                      [{s.index}]{' '}
+                      <a href={s.url} target="_blank" rel="noopener noreferrer">{s.title}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         ))}
         {status && (
