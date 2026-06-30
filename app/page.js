@@ -158,12 +158,11 @@ export default function Home() {
             <div className="message-label">
               {m.role === 'user' ? '市民' : 'AIアシスタント'}
             </div>
-            <div
-              className="bubble"
-              {...(m.html ? { dangerouslySetInnerHTML: { __html: m.html } } : {})}
-            >
-              {!m.html && m.text}
-            </div>
+            {m.html ? (
+              <div className="bubble" dangerouslySetInnerHTML={{ __html: m.html }} />
+            ) : (
+              <div className="bubble">{m.text}</div>
+            )}
 
             {m.role === 'assistant' && m.searchEntryPoint && (
               <div className="search-entry-point"
