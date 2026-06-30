@@ -10,13 +10,22 @@ const DEFAULT_CONFIG = {
 
 
 function renderMarkdown(text) {
-  return text
+  const escaped = text
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/## (.+)/g, '<h2>$1</h2>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
-    .replace(/(https?:\/\/[^\s<&]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>')
-    .replace(/\n/g, '<br>');
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+  // Single pass over markdown links and bare URLs so a bare-URL match
+  // never re-wraps a URL already placed inside an href="..." attribute.
+  const linked = escaped.replace(
+    /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)|(https?:\/\/[^\s<&]+)/g,
+    (match, linkText, linkUrl, bareUrl) => {
+      if (linkUrl) return `<a href="${linkUrl}" target="_blank" rel="noopener">${linkText}</a>`;
+      return `<a href="${bareUrl}" target="_blank" rel="noopener">${bareUrl}</a>`;
+    }
+  );
+
+  return linked.replace(/\n/g, '<br>');
 }
 
 export default function Home() {
