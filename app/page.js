@@ -66,6 +66,10 @@ export default function Home() {
         throw new Error(err.error || `HTTP ${res.status}`);
       }
 
+      if (!res.body) {
+        throw new Error('ストリーミング応答を受信できませんでした。');
+      }
+
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
@@ -83,27 +87,33 @@ export default function Home() {
           let eventType = 'message', dataLine = '';
           for (const line of lines) {
             if (line.startsWith('event: ')) eventType = line.slice(7);
-            if (line.startsWith('data: ')) dataLine = line.slice(6);
+            if (line.startsWith('data: ')) dataLine += (dataLine ? '\n' : '') + line.slice(6);
           }
           if (!dataLine) continue;
-          const data = JSON.parse(dataLine);
+
+          let data;
+          try {
+            data = JSON.parse(dataLine);
+          } catch {
+            continue;
+          }
 
           if (eventType === 'status') {
-            setStatus(data.message);
+            setStatus(data.message || '');
           } else if (eventType === 'delta') {
-            fullText += data.text;
+            fullText += data.text || '';
             setMessages(prev => prev.map((m, i) =>
               i === aiIndex ? { ...m, html: renderMarkdown(fullText) } : m
             ));
           } else if (eventType === 'done') {
             setStatus('');
             setMessages(prev => prev.map((m, i) =>
-              i === aiIndex ? { ...m, sources: data.sources || [], searchEntryPoint: data.searchEntryPoint } : m
+              i === aiIndex ? { ...m, sources: Array.isArray(data.sources) ? data.sources : [], searchEntryPoint: data.searchEntryPoint || null } : m
             ));
           } else if (eventType === 'error') {
             setStatus('');
             setMessages(prev => prev.map((m, i) =>
-              i === aiIndex ? { ...m, text: `エラー: ${data.message}`, html: '' } : m
+              i === aiIndex ? { ...m, text: `エラー: ${data.message || '不明なエラーが発生しました。'}`, html: '' } : m
             ));
           }
         }

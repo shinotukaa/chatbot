@@ -128,12 +128,17 @@ export async function POST(req) {
         }
 
         for await (const chunk of result.stream) {
-          const text = chunk.text();
+          let text = '';
+          try {
+            text = chunk.text();
+          } catch {
+            continue;
+          }
           if (text) send('delta', { text });
         }
 
         const response = await result.response;
-        const groundingMeta = response.candidates?.[0]?.groundingMetadata;
+        const groundingMeta = response?.candidates?.[0]?.groundingMetadata;
 
         const chunks = groundingMeta?.groundingChunks ?? [];
         const sources = chunks
