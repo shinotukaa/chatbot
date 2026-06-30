@@ -3,12 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 
-const DEFAULTS = {
-  siteName: '市役所AIチャットボット',
-  siteUrl: 'https://www.city.izumiotsu.lg.jp/index.html',
-  welcomeMessage: 'ご質問をどうぞ。市のWebサイトをGoogle検索でリアルタイムに調べて、丁寧にお答えします。',
-};
-
 function generateIframeCode(deployUrl, width, height) {
   return `<!-- 市役所AIチャットボット（インライン埋め込み） -->
 <iframe
@@ -78,14 +72,20 @@ function generateWidgetCode(deployUrl, btnLabel) {
 </script>`.trim();
 }
 
+const ENV_VARS = [
+  { key: 'GEMINI_API_KEY',    label: 'Gemini APIキー',         example: 'AIza...',                             secret: true },
+  { key: 'SITE_NAME',         label: 'サイト名（ヘッダー）',    example: '〇〇市役所 AIチャットボット',          secret: false },
+  { key: 'DEFAULT_URL',       label: '対象サイトURL',            example: 'https://www.city.example.lg.jp/',    secret: false },
+  { key: 'WELCOME_MESSAGE',   label: 'ウェルカムメッセージ',     example: 'ご質問をどうぞ。...',                  secret: false },
+];
+
 export default function AdminPage() {
-  const [form, setForm] = useState(DEFAULTS);
-  const [saved, setSaved] = useState(false);
+  const [serverConfig, setServerConfig] = useState(null);
   const [apiKeyOk, setApiKeyOk] = useState(null);
 
-  // Embed settings
+  // Embed settings (UI only — no server state needed)
   const [deployUrl, setDeployUrl] = useState('');
-  const [embedType, setEmbedType] = useState('widget'); // 'iframe' | 'widget'
+  const [embedType, setEmbedType] = useState('widget');
   const [iframeWidth, setIframeWidth] = useState('100%');
   const [iframeHeight, setIframeHeight] = useState('700px');
   const [btnLabel, setBtnLabel] = useState('AIに質問する');
@@ -93,53 +93,17 @@ export default function AdminPage() {
   const codeRef = useRef(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem('chatbot_config');
-    if (saved) {
-      try { setForm(f => ({ ...DEFAULTS, ...JSON.parse(saved) })); } catch (_) {}
-    }
-    const embedSaved = localStorage.getItem('chatbot_embed');
-    if (embedSaved) {
-      try {
-        const e = JSON.parse(embedSaved);
-        if (e.deployUrl) setDeployUrl(e.deployUrl);
-        if (e.embedType) setEmbedType(e.embedType);
-        if (e.iframeWidth) setIframeWidth(e.iframeWidth);
-        if (e.iframeHeight) setIframeHeight(e.iframeHeight);
-        if (e.btnLabel) setBtnLabel(e.btnLabel);
-      } catch (_) {}
-    } else if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined') {
       setDeployUrl(window.location.origin);
     }
+    fetch('/api/config').then(r => r.json()).then(setServerConfig).catch(() => {});
     fetch('/api/status').then(r => r.json()).then(d => setApiKeyOk(d.ok)).catch(() => setApiKeyOk(false));
   }, []);
-
-  const handleChange = (field) => (e) => {
-    setForm(f => ({ ...f, [field]: e.target.value }));
-    setSaved(false);
-  };
-
-  const handleSave = (e) => {
-    e.preventDefault();
-    localStorage.setItem('chatbot_config', JSON.stringify(form));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
-  };
-
-  const handleReset = () => {
-    setForm(DEFAULTS);
-    localStorage.removeItem('chatbot_config');
-    setSaved(false);
-  };
 
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const embedCode = embedType === 'iframe'
     ? generateIframeCode(deployUrl || origin, iframeWidth, iframeHeight)
     : generateWidgetCode(deployUrl || origin, btnLabel);
-
-  const handleEmbedChange = (setter) => (e) => {
-    setter(e.target.value);
-    localStorage.setItem('chatbot_embed', JSON.stringify({ deployUrl, embedType, iframeWidth, iframeHeight, btnLabel }));
-  };
 
   const handleCopy = () => {
     navigator.clipboard.writeText(embedCode).then(() => {
@@ -157,63 +121,87 @@ export default function AdminPage() {
 
       <div className="admin-body">
 
-        {/* API Status */}
+        {/* 現在の設定確認 */}
         <div className="admin-card">
-          <h2>システム状態</h2>
-          <div className="form-group">
-            <label>Gemini API キー</label>
-            {apiKeyOk === null && <span style={{fontSize:'0.85rem', color:'#888'}}>確認中...</span>}
-            {apiKeyOk === true && <span className="status-badge ok">✓ 設定済み（正常）</span>}
-            {apiKeyOk === false && <span className="status-badge ng">✗ 未設定またはエラー</span>}
-            <p className="hint">
-              APIキーはVercelの環境変数「GEMINI_API_KEY」で管理します。
-              変更は<a href="https://vercel.com/dashboard" target="_blank" rel="noopener noreferrer" style={{color:'#2d5aa0'}}>Vercelダッシュボード</a>から行ってください。
-            </p>
+          <h2>現在の設定（サーバー反映値）</h2>
+          <p style={{fontSize:'0.82rem', color:'#5a6a7e', marginBottom:'16px', lineHeight:'1.6'}}>
+            以下はVercelの環境変数から読み込まれた実際の設定値です。<br/>
+            変更する場合は下の「設定変更の手順」を参照してください。
+          </p>
+
+          <table className="config-table">
+            <tbody>
+              <tr>
+                <th>Gemini APIキー</th>
+                <td>
+                  {apiKeyOk === null && <span style={{color:'#888'}}>確認中...</span>}
+                  {apiKeyOk === true  && <span className="status-badge ok">✓ 設定済み</span>}
+                  {apiKeyOk === false && <span className="status-badge ng">✗ 未設定</span>}
+                </td>
+              </tr>
+              <tr>
+                <th>サイト名</th>
+                <td>{serverConfig?.siteName ?? '読み込み中...'}</td>
+              </tr>
+              <tr>
+                <th>対象サイトURL</th>
+                <td><a href={serverConfig?.siteUrl} target="_blank" rel="noopener noreferrer">{serverConfig?.siteUrl ?? '読み込み中...'}</a></td>
+              </tr>
+              <tr>
+                <th>ウェルカムメッセージ</th>
+                <td style={{whiteSpace:'pre-wrap'}}>{serverConfig?.welcomeMessage ?? '読み込み中...'}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style={{marginTop:'16px'}}>
+            <Link href="/" style={{background:'#1a3a6b', color:'#fff', borderRadius:'8px', padding:'9px 20px', fontSize:'0.88rem', fontWeight:'700', textDecoration:'none', display:'inline-block'}}>
+              チャット画面で確認 →
+            </Link>
           </div>
         </div>
 
-        {/* Settings */}
+        {/* 設定変更の手順 */}
         <div className="admin-card">
-          <h2>チャット画面の設定</h2>
-          <form onSubmit={handleSave}>
-            <div className="form-group">
-              <label htmlFor="siteName">サイト名（ヘッダー表示）</label>
-              <p className="hint">チャット画面の上部に表示されるタイトルです。</p>
-              <input id="siteName" type="text" value={form.siteName}
-                onChange={handleChange('siteName')} placeholder="例：〇〇市役所 AIチャットボット" />
-            </div>
-            <div className="form-group">
-              <label htmlFor="siteUrl">対象サイトURL</label>
-              <p className="hint">AIが参照する公式サイトのURLを入力してください。</p>
-              <input id="siteUrl" type="url" value={form.siteUrl}
-                onChange={handleChange('siteUrl')} placeholder="https://www.city.example.lg.jp/" />
-            </div>
-            <div className="form-group">
-              <label htmlFor="welcomeMessage">ウェルカムメッセージ</label>
-              <p className="hint">チャット画面を開いたときに表示される案内文です。</p>
-              <textarea id="welcomeMessage" rows={4} value={form.welcomeMessage}
-                onChange={handleChange('welcomeMessage')} placeholder="例：ご質問をどうぞ。" />
-            </div>
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-              <button type="submit" className="save-btn">設定を保存</button>
-              <button type="button" onClick={handleReset}
-                style={{ background: 'none', border: '1px solid #d0d8e4', borderRadius: '8px', padding: '11px 20px', cursor: 'pointer', fontSize: '0.9rem', color: '#5a6a7e' }}>
-                初期値に戻す
-              </button>
-              {saved && <div className="toast">✓ 保存しました</div>}
-            </div>
-          </form>
+          <h2>設定変更の手順</h2>
+          <p style={{fontSize:'0.82rem', color:'#5a6a7e', marginBottom:'16px', lineHeight:'1.6'}}>
+            設定はVercelの環境変数で管理します。変更するとすべての利用者に即時反映されます。
+          </p>
+
+          <ol className="steps-list">
+            <li><a href="https://vercel.com/dashboard" target="_blank" rel="noopener noreferrer">Vercelダッシュボード</a> を開く</li>
+            <li>対象プロジェクト → <strong>Settings</strong> → <strong>Environment Variables</strong> を開く</li>
+            <li>以下の環境変数を追加・編集する</li>
+            <li><strong>Deployments</strong> から最新をRedeploy（または次のpushで自動反映）</li>
+          </ol>
+
+          <table className="config-table" style={{marginTop:'14px'}}>
+            <thead>
+              <tr><th>環境変数名</th><th>内容</th><th>設定例</th></tr>
+            </thead>
+            <tbody>
+              {ENV_VARS.map(v => (
+                <tr key={v.key}>
+                  <td><code className="env-key">{v.key}</code></td>
+                  <td style={{fontSize:'0.82rem'}}>{v.label}</td>
+                  <td style={{fontSize:'0.8rem', color: v.secret ? '#c0392b' : '#5a6a7e'}}>
+                    {v.secret ? '（機密情報）' : v.example}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
-        {/* Embed Code Generator */}
+        {/* 埋め込みコード生成 */}
         <div className="admin-card">
           <h2>🔗 埋め込みコードの生成</h2>
 
           <div className="form-group">
-            <label htmlFor="deployUrl">チャットボットのURL（Vercelの公開URL）</label>
+            <label htmlFor="deployUrl">チャットボットのURL（VercelのデプロイURL）</label>
             <p className="hint">Vercelにデプロイ後に発行されるURLを入力してください。</p>
             <input id="deployUrl" type="url" value={deployUrl}
-              onChange={(e) => { setDeployUrl(e.target.value); }}
+              onChange={e => setDeployUrl(e.target.value)}
               placeholder="https://your-chatbot.vercel.app" />
           </div>
 
@@ -222,15 +210,13 @@ export default function AdminPage() {
             <div className="embed-type-row">
               <label className={`embed-type-btn ${embedType === 'widget' ? 'active' : ''}`}>
                 <input type="radio" name="embedType" value="widget"
-                  checked={embedType === 'widget'}
-                  onChange={() => setEmbedType('widget')} />
+                  checked={embedType === 'widget'} onChange={() => setEmbedType('widget')} />
                 <span>💬 フローティングボタン</span>
-                <small>右下に浮かぶボタン式。市のサイトのデザインを壊さない。</small>
+                <small>右下に浮かぶボタン式。既存サイトのデザインを崩さない。</small>
               </label>
               <label className={`embed-type-btn ${embedType === 'iframe' ? 'active' : ''}`}>
                 <input type="radio" name="embedType" value="iframe"
-                  checked={embedType === 'iframe'}
-                  onChange={() => setEmbedType('iframe')} />
+                  checked={embedType === 'iframe'} onChange={() => setEmbedType('iframe')} />
                 <span>🖼️ インライン埋め込み</span>
                 <small>ページ内にチャット画面をそのまま表示する。</small>
               </label>
@@ -241,24 +227,22 @@ export default function AdminPage() {
             <div className="form-group">
               <label htmlFor="btnLabel">ボタンのラベル文字</label>
               <input id="btnLabel" type="text" value={btnLabel}
-                onChange={(e) => setBtnLabel(e.target.value)}
+                onChange={e => setBtnLabel(e.target.value)}
                 placeholder="AIに質問する" style={{maxWidth:'280px'}} />
             </div>
           )}
 
           {embedType === 'iframe' && (
-            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+            <div style={{display:'flex', gap:'16px', flexWrap:'wrap'}}>
               <div className="form-group" style={{flex:1, minWidth:'120px'}}>
                 <label htmlFor="iframeWidth">横幅</label>
                 <input id="iframeWidth" type="text" value={iframeWidth}
-                  onChange={(e) => setIframeWidth(e.target.value)}
-                  placeholder="100%" />
+                  onChange={e => setIframeWidth(e.target.value)} placeholder="100%" />
               </div>
               <div className="form-group" style={{flex:1, minWidth:'120px'}}>
                 <label htmlFor="iframeHeight">高さ</label>
                 <input id="iframeHeight" type="text" value={iframeHeight}
-                  onChange={(e) => setIframeHeight(e.target.value)}
-                  placeholder="700px" />
+                  onChange={e => setIframeHeight(e.target.value)} placeholder="700px" />
               </div>
             </div>
           )}
@@ -277,17 +261,6 @@ export default function AdminPage() {
             ※ 上記コードを市のWebサイトのHTML（適切な場所）に貼り付けてください。<br/>
             CMSをお使いの場合は「HTMLブロック」や「カスタムHTML」から挿入できます。
           </p>
-        </div>
-
-        {/* Preview link */}
-        <div className="admin-card">
-          <h2>プレビュー</h2>
-          <div style={{ marginTop: '4px' }}>
-            <Link href="/"
-              style={{ background: '#1a3a6b', color: '#fff', borderRadius: '8px', padding: '10px 22px', fontSize: '0.9rem', fontWeight: '700', textDecoration: 'none', display: 'inline-block' }}>
-              チャット画面で確認 →
-            </Link>
-          </div>
         </div>
 
       </div>

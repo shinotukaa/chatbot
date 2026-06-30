@@ -8,6 +8,7 @@ const DEFAULT_CONFIG = {
   welcomeMessage: 'ご質問をどうぞ。市のWebサイトをGoogle検索でリアルタイムに調べて、丁寧にお答えします。',
 };
 
+
 function renderMarkdown(text) {
   return text
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -20,7 +21,6 @@ function renderMarkdown(text) {
 
 export default function Home() {
   const [config, setConfig] = useState(DEFAULT_CONFIG);
-  const [defaultApiUrl, setDefaultApiUrl] = useState('');
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -28,20 +28,18 @@ export default function Home() {
   const chatRef = useRef(null);
 
   useEffect(() => {
-    // Load config from localStorage (set by admin panel)
-    const saved = localStorage.getItem('chatbot_config');
-    if (saved) {
-      try { setConfig(c => ({ ...c, ...JSON.parse(saved) })); } catch (_) {}
-    }
-    // Load default URL from API
-    fetch('/api/default-url').then(r => r.json()).then(d => setDefaultApiUrl(d.url));
+    // Load config from server-side environment variables
+    fetch('/api/config')
+      .then(r => r.json())
+      .then(d => setConfig(c => ({ ...c, ...d })))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
   }, [messages, status]);
 
-  const targetUrl = config.siteUrl || defaultApiUrl;
+  const targetUrl = config.siteUrl;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
