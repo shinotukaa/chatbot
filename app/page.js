@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from 'react';
 const DEFAULT_CONFIG = {
   siteName: '市役所AIチャットボット',
   siteUrl: '',
-  welcomeMessage: 'ご質問をどうぞ。市のWebサイトをGoogle検索でリアルタイムに調べて、丁寧にお答えします。',
+  welcomeMessage: 'ご質問をどうぞ。市のWebサイトを直接調べて、丁寧にお答えします。',
 };
 
 
@@ -58,7 +58,7 @@ export default function Home() {
     setMessages(prev => [...prev, { role: 'user', text: message }]);
     setInput('');
     setLoading(true);
-    setStatus('Google検索で情報を取得中...');
+    setStatus('市役所サイトを確認中...');
 
     const aiIndex = messages.length + 1;
     setMessages(prev => [...prev, { role: 'assistant', text: '', html: '', sources: [], searchEntryPoint: null }]);
