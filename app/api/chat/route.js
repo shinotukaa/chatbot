@@ -100,7 +100,7 @@ export async function POST(req) {
       try {
         const { pages } = await crawlSite(targetUrl, message, (statusMessage) => {
           send('status', { message: statusMessage });
-        });
+        }, genAI);
 
         if (pages.length === 0) {
           send('error', { message: '対象のWebサイトに接続できませんでした。' });
