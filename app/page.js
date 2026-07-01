@@ -157,12 +157,6 @@ export default function Home() {
         </div>
       </header>
 
-      {targetUrl && (
-        <div className="search-info">
-          🔍 検索対象：
-          <a href={targetUrl} target="_blank" rel="noopener noreferrer">{targetUrl}</a>
-        </div>
-      )}
 
       <div className="chat-body" ref={chatRef}>
         <div className="welcome-card">
