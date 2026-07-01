@@ -77,8 +77,7 @@ const ENV_VARS = [
   { key: 'SITE_NAME',           label: 'サイト名（ヘッダー）',             example: '〇〇市役所 AIチャットボット',          secret: false },
   { key: 'DEFAULT_URL',         label: '対象サイトURL',                     example: 'https://www.city.example.lg.jp/',    secret: false },
   { key: 'WELCOME_MESSAGE',     label: 'ウェルカムメッセージ',              example: 'ご質問をどうぞ。...',                  secret: false },
-  { key: 'GOOGLE_CSE_API_KEY',  label: 'Google Custom Search APIキー（任意）', example: '',                               secret: true },
-  { key: 'GOOGLE_CSE_CX',       label: 'Google CSE エンジンID（任意）',    example: '123456789:abcdefgh',                  secret: false },
+  { key: 'SERP_API_KEY',         label: 'SerpAPI キー（任意）',             example: '',                                    secret: true },
 ];
 
 export default function AdminPage() {

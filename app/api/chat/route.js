@@ -99,7 +99,7 @@ export async function POST(req) {
       };
 
       try {
-        const useCSE = process.env.GOOGLE_CSE_API_KEY && process.env.GOOGLE_CSE_CX;
+        const useCSE = process.env.SERP_API_KEY;
         const { pages } = useCSE
           ? await searchSite(targetUrl, message, (statusMessage) => {
               send('status', { message: statusMessage });
