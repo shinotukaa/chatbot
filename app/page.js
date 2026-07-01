@@ -112,7 +112,7 @@ export default function Home() {
           } else if (eventType === 'delta') {
             fullText += data.text || '';
             // USED_PAGES:タグを表示から除去
-            const displayText = fullText.replace(/\s*USED_PAGES:\[[^\]]*\]/, '');
+            const displayText = fullText.replace(/\s*USED_PAGES:\[[\s\S]*?\]/, '');
             setMessages(prev => prev.map((m, i) =>
               i === aiIndex ? { ...m, html: renderMarkdown(displayText) } : m
             ));
