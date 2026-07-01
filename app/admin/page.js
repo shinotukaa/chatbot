@@ -6,14 +6,23 @@ import Link from 'next/link';
 function generateIframeCode(deployUrl, width, height) {
   return `<!-- 市役所AIチャットボット（インライン埋め込み） -->
 <iframe
+  id="city-ai-iframe"
   src="${deployUrl}"
   width="${width}"
   height="${height}"
   frameborder="0"
   allow="clipboard-write"
   title="AIチャットボット"
-  style="border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.12);"
-></iframe>`.trim();
+  style="border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.12); transition: height 0.3s ease;"
+></iframe>
+<script>
+  window.addEventListener('message', function(e) {
+    if (e.data && e.data.type === 'chatbot-resize') {
+      var f = document.getElementById('city-ai-iframe');
+      if (f) f.style.height = e.data.height + 'px';
+    }
+  });
+</script>`.trim();
 }
 
 function generateWidgetCode(deployUrl, btnLabel) {
