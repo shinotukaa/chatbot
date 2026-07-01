@@ -103,7 +103,7 @@ export async function POST(req) {
         const { pages } = useCSE
           ? await searchSite(targetUrl, message, (statusMessage) => {
               send('status', { message: statusMessage });
-            })
+            }, genAI)
           : await crawlSite(targetUrl, message, (statusMessage) => {
               send('status', { message: statusMessage });
             }, genAI);
