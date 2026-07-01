@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { searchSite } from '@/lib/searcher';
 import { crawlSite } from '@/lib/crawler';
 
 export const runtime = 'nodejs';
@@ -98,9 +99,14 @@ export async function POST(req) {
       };
 
       try {
-        const { pages } = await crawlSite(targetUrl, message, (statusMessage) => {
-          send('status', { message: statusMessage });
-        }, genAI);
+        const useCSE = process.env.GOOGLE_CSE_API_KEY && process.env.GOOGLE_CSE_CX;
+        const { pages } = useCSE
+          ? await searchSite(targetUrl, message, (statusMessage) => {
+              send('status', { message: statusMessage });
+            })
+          : await crawlSite(targetUrl, message, (statusMessage) => {
+              send('status', { message: statusMessage });
+            }, genAI);
 
         if (pages.length === 0) {
           send('error', { message: '対象のWebサイトに接続できませんでした。' });
