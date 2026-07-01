@@ -33,6 +33,16 @@ body {
   box-shadow: 0 0 30px rgba(0,0,0,0.10);
 }
 
+/* iframe埋め込み時：高さを自動伸長に切替 */
+.in-iframe .chat-layout {
+  height: auto;
+  min-height: 100vh;
+}
+.in-iframe .chat-body {
+  overflow-y: visible;
+  height: auto;
+}
+
 /* ─── Header ─── */
 .site-header {
   background: var(--primary);

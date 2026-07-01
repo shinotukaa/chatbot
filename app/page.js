@@ -50,15 +50,18 @@ export default function Home() {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
   }, [messages, status]);
 
-  // iframeとして埋め込まれた場合に親ページへ高さを通知
+  // iframeとして埋め込まれた場合にbodyクラスを付与＋高さ通知
   useEffect(() => {
+    const inIframe = window.self !== window.top;
+    if (!inIframe) return;
+    document.body.classList.add('in-iframe');
     const sendHeight = () => {
-      const h = document.documentElement.scrollHeight;
+      const h = document.body.scrollHeight;
       window.parent.postMessage({ type: 'chatbot-resize', height: h }, '*');
     };
-    sendHeight();
     const observer = new ResizeObserver(sendHeight);
     observer.observe(document.body);
+    sendHeight();
     return () => observer.disconnect();
   }, []);
 
