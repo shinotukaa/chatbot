@@ -78,6 +78,8 @@ const ENV_VARS = [
   { key: 'DEFAULT_URL',         label: '対象サイトURL',                     example: 'https://www.city.example.lg.jp/',    secret: false },
   { key: 'WELCOME_MESSAGE',     label: 'ウェルカムメッセージ',              example: 'ご質問をどうぞ。...',                  secret: false },
   { key: 'SERP_API_KEY',         label: 'SerpAPI キー（任意）',             example: '',                                    secret: true },
+  { key: 'CHARACTER_NAME',      label: 'キャラクター名（任意）',            example: 'ミネドン',                             secret: false },
+  { key: 'CHARACTER_IMAGE_URL', label: 'キャラクター画像URL（任意）',       example: 'https://example.com/chara.png',       secret: false },
 ];
 
 export default function AdminPage() {

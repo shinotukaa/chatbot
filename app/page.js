@@ -6,6 +6,8 @@ const DEFAULT_CONFIG = {
   siteName: '市役所AIチャットボット',
   siteUrl: '',
   welcomeMessage: 'ご質問をどうぞ。市のWebサイトを直接調べて、丁寧にお答えします。',
+  characterName: '',
+  characterImageUrl: '',
 };
 
 
@@ -143,7 +145,11 @@ export default function Home() {
     <div className="chat-layout">
       <header className="site-header">
         <div className="header-inner">
-          <div className="header-icon">🏛️</div>
+          {config.characterImageUrl ? (
+            <img src={config.characterImageUrl} alt={config.characterName || 'キャラクター'} className="header-character" />
+          ) : (
+            <div className="header-icon">🏛️</div>
+          )}
           <div className="header-text">
             <h1>{config.siteName}</h1>
             <p>AIがWebサイトを検索して、ご質問にお答えします</p>
@@ -166,9 +172,19 @@ export default function Home() {
 
         {messages.map((m, i) => (
           <div key={i} className={`message ${m.role}`}>
-            <div className="message-label">
-              {m.role === 'user' ? '市民' : 'AIアシスタント'}
-            </div>
+            {m.role === 'assistant' && (
+              <div className="assistant-avatar">
+                {config.characterImageUrl ? (
+                  <img src={config.characterImageUrl} alt={config.characterName || 'AI'} className="avatar-img" />
+                ) : (
+                  <div className="avatar-icon">🏛️</div>
+                )}
+                <span className="avatar-name">{config.characterName || 'AIアシスタント'}</span>
+              </div>
+            )}
+            {m.role === 'user' && (
+              <div className="message-label">市民</div>
+            )}
             {m.html ? (
               <div className="bubble" dangerouslySetInnerHTML={{ __html: m.html }} />
             ) : (
@@ -182,11 +198,10 @@ export default function Home() {
 
             {m.role === 'assistant' && m.sources?.length > 0 && (
               <div className="sources-box">
-                <p className="sources-title">参照元</p>
+                <p className="sources-title">参考ページ</p>
                 <ul className="sources-list">
                   {m.sources.map(s => (
                     <li key={s.index}>
-                      <span className="idx">[{s.index}]</span>
                       <a href={s.url} target="_blank" rel="noopener noreferrer">{s.title}</a>
                     </li>
                   ))}
