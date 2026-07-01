@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>〇〇市役所 公式サイト（デモ）</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Hiragino Sans', 'Meiryo', 'Yu Gothic', sans-serif;
+      background: #f4f6f9;
+      color: #222;
+    }
+
+    /* ── ヘッダー ── */
+    .site-header {
+      background: #1a3a6b;
+      color: #fff;
+      border-bottom: 4px solid #c8a951;
+    }
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon {
+      font-size: 2rem;
+      background: rgba(255,255,255,0.15);
+      border-radius: 8px;
+      width: 48px; height: 48px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-text h1 { font-size: 1.2rem; font-weight: 700; }
+    .logo-text p { font-size: 0.75rem; opacity: 0.75; margin-top: 2px; }
+    .header-nav { display: flex; gap: 20px; }
+    .header-nav a {
+      color: rgba(255,255,255,0.85);
+      text-decoration: none;
+      font-size: 0.85rem;
+      padding: 4px 0;
+      border-bottom: 2px solid transparent;
+      transition: border-color 0.2s;
+    }
+    .header-nav a:hover { border-bottom-color: #c8a951; color: #fff; }
+
+    /* ── ナビゲーション ── */
+    .global-nav {
+      background: #fff;
+      border-bottom: 1px solid #dde3ed;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .global-nav ul {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      list-style: none;
+      gap: 0;
+    }
+    .global-nav ul li a {
+      display: block;
+      padding: 14px 18px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #1a3a6b;
+      text-decoration: none;
+      border-bottom: 3px solid transparent;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .global-nav ul li a:hover { border-bottom-color: #1a3a6b; background: #f0f4fb; }
+
+    /* ── メインレイアウト ── */
+    .page-wrapper {
+      max-width: 1100px;
+      margin: 32px auto;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 28px;
+      align-items: start;
+    }
+
+    /* ── メインコンテンツ ── */
+    .main-content h2 {
+      font-size: 1.1rem;
+      color: #1a3a6b;
+      border-left: 4px solid #1a3a6b;
+      padding-left: 12px;
+      margin-bottom: 16px;
+    }
+
+    .hero-banner {
+      background: linear-gradient(135deg, #1a3a6b 0%, #2d5aa0 100%);
+      border-radius: 12px;
+      padding: 28px;
+      color: #fff;
+      margin-bottom: 24px;
+    }
+    .hero-banner h2 {
+      font-size: 1.3rem;
+      border: none;
+      padding: 0;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .hero-banner p { font-size: 0.9rem; opacity: 0.9; line-height: 1.7; }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #dde3ed;
+      border-radius: 10px;
+      padding: 18px;
+      transition: box-shadow 0.2s;
+      cursor: pointer;
+    }
+    .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+    .card-icon { font-size: 1.6rem; margin-bottom: 8px; }
+    .card h3 { font-size: 0.9rem; color: #1a3a6b; margin-bottom: 4px; }
+    .card p { font-size: 0.78rem; color: #5a6a7e; line-height: 1.5; }
+
+    .notice-box {
+      background: #fff;
+      border: 1px solid #dde3ed;
+      border-radius: 10px;
+      padding: 18px 20px;
+    }
+    .notice-box ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .notice-box li {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding-bottom: 10px; border-bottom: 1px solid #eef0f5;
+      font-size: 0.85rem;
+    }
+    .notice-box li:last-child { border-bottom: none; padding-bottom: 0; }
+    .notice-date { color: #5a6a7e; font-size: 0.78rem; white-space: nowrap; min-width: 90px; }
+    .notice-tag {
+      background: #e8f0fb; color: #1a3a6b;
+      font-size: 0.7rem; font-weight: 700;
+      padding: 2px 7px; border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    /* ── サイドバー（チャットボット） ── */
+    .sidebar h2 {
+      font-size: 1.05rem;
+      color: #1a3a6b;
+      border-left: 4px solid #c8a951;
+      padding-left: 12px;
+      margin-bottom: 14px;
+    }
+    .chatbot-wrap {
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      transition: height 0.3s ease;
+    }
+    .chatbot-wrap iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+      display: block;
+      transition: height 0.3s ease;
+    }
+
+    /* ── フッター ── */
+    .site-footer {
+      background: #1a3a6b;
+      color: rgba(255,255,255,0.7);
+      text-align: center;
+      padding: 20px;
+      font-size: 0.78rem;
+      margin-top: 48px;
+    }
+
+    @media (max-width: 768px) {
+      .page-wrapper { grid-template-columns: 1fr; }
+      .header-nav { display: none; }
+      .card-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ヘッダー -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">🏛️</div>
+        <div class="logo-text">
+          <h1>〇〇市役所</h1>
+          <p>市民のみなさまへ</p>
+        </div>
+      </div>
+      <nav class="header-nav">
+        <a href="#">文字サイズ</a>
+        <a href="#">サイトマップ</a>
+        <a href="#">お問い合わせ</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- グローバルナビ -->
+  <nav class="global-nav">
+    <ul>
+      <li><a href="#">くらし・手続き</a></li>
+      <li><a href="#">子育て・教育</a></li>
+      <li><a href="#">健康・福祉</a></li>
+      <li><a href="#">産業・まちづくり</a></li>
+      <li><a href="#">市政情報</a></li>
+      <li><a href="#">観光・文化</a></li>
+    </ul>
+  </nav>
+
+  <!-- メイン -->
+  <div class="page-wrapper">
+
+    <!-- 左：メインコンテンツ -->
+    <main class="main-content">
+
+      <div class="hero-banner">
+        <h2>〇〇市へようこそ</h2>
+        <p>各種手続きや市政情報を掲載しています。<br>右側のAIチャットボットにご質問いただくと、市のWebサイトを検索してお答えします。</p>
+      </div>
+
+      <h2>よく利用される手続き</h2>
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-icon">📋</div>
+          <h3>転入・転出届</h3>
+          <p>引越しの際の住所変更手続きについて</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🪪</div>
+          <h3>マイナンバーカード</h3>
+          <p>申請・受取・暗証番号の変更など</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🏥</div>
+          <h3>国民健康保険</h3>
+          <p>加入・脱退・保険料の納付について</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🗑️</div>
+          <h3>ごみ・資源の出し方</h3>
+          <p>ごみ収集日程・分別方法について</p>
+        </div>
+      </div>
+
+      <h2>新着情報</h2>
+      <div class="notice-box">
+        <ul>
+          <li>
+            <span class="notice-date">2026年7月1日</span>
+            <span class="notice-tag">お知らせ</span>
+            <span>AIチャットボットを試験導入しました。ご意見・ご感想をお寄せください。</span>
+          </li>
+          <li>
+            <span class="notice-date">2026年6月28日</span>
+            <span class="notice-tag">手続き</span>
+            <span>マイナンバーカードの暗証番号初期化サービスを市役所窓口で開始しました。</span>
+          </li>
+          <li>
+            <span class="notice-date">2026年6月20日</span>
+            <span class="notice-tag">イベント</span>
+            <span>夏まつり2026の開催日程が決定しました。詳しくはイベント情報をご覧ください。</span>
+          </li>
+          <li>
+            <span class="notice-date">2026年6月15日</span>
+            <span class="notice-tag">窓口</span>
+            <span>市役所の開庁時間が変更になります。詳細はお知らせをご確認ください。</span>
+          </li>
+        </ul>
+      </div>
+
+    </main>
+
+    <!-- 右：チャットボット -->
+    <aside class="sidebar">
+      <h2>💬 AIに質問する</h2>
+      <div class="chatbot-wrap">
+        <iframe
+          id="city-ai-iframe"
+          src="/"
+          title="AIチャットボット"
+          allow="clipboard-write"
+        ></iframe>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- フッター -->
+  <footer class="site-footer">
+    〒000-0000 〇〇県〇〇市〇〇町1-1-1　TEL: 000-000-0000<br>
+    Copyright © 〇〇市役所 All Rights Reserved.
+  </footer>
+
+  <script>
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'chatbot-resize') {
+        var iframe = document.getElementById('city-ai-iframe');
+        if (iframe) iframe.style.height = e.data.height + 'px';
+      }
+    });
+  </script>
+
+</body>
+</html>
