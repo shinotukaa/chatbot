@@ -6,311 +6,314 @@
   <title>〇〇市役所 公式サイト（デモ）</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Hiragino Sans', 'Meiryo', 'Yu Gothic', sans-serif; background: #fff; color: #222; }
 
-    body {
-      font-family: 'Hiragino Sans', 'Meiryo', 'Yu Gothic', sans-serif;
-      background: #f4f6f9;
-      color: #222;
+    /* ── トップバー ── */
+    .topbar {
+      display: flex; justify-content: flex-end; gap: 0;
+      background: #fff; border-bottom: 1px solid #ccc;
     }
+    .topbar a {
+      display: block; padding: 6px 18px;
+      font-size: 0.78rem; color: #333; text-decoration: none;
+      border-left: 1px solid #ccc;
+    }
+    .topbar a:hover { background: #f0f0f0; }
 
-    /* ── ヘッダー ── */
+    /* ── メインヘッダー ── */
     .site-header {
-      background: #1a3a6b;
-      color: #fff;
-      border-bottom: 4px solid #c8a951;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 320px;
     }
-    .header-inner {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 12px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
+
+    .header-left {
+      background: #fff;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 24px 16px;
+      border-right: 1px solid #ddd;
     }
-    .logo { display: flex; align-items: center; gap: 12px; }
-    .logo-icon {
-      font-size: 2rem;
-      background: rgba(255,255,255,0.15);
-      border-radius: 8px;
-      width: 48px; height: 48px;
+    .city-logo { text-align: center; margin-bottom: 20px; }
+    .city-logo .logo-circle {
+      width: 90px; height: 90px; background: #2d6a2d;
+      border-radius: 50%; margin: 0 auto 8px;
       display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem;
     }
-    .logo-text h1 { font-size: 1.2rem; font-weight: 700; }
-    .logo-text p { font-size: 0.75rem; opacity: 0.75; margin-top: 2px; }
-    .header-nav { display: flex; gap: 20px; }
-    .header-nav a {
-      color: rgba(255,255,255,0.85);
-      text-decoration: none;
-      font-size: 0.85rem;
-      padding: 4px 0;
-      border-bottom: 2px solid transparent;
-      transition: border-color 0.2s;
-    }
-    .header-nav a:hover { border-bottom-color: #c8a951; color: #fff; }
+    .city-logo h1 { font-size: 1.5rem; color: #1a3a1a; font-weight: 900; letter-spacing: 0.1em; }
+    .city-logo p { font-size: 0.7rem; color: #666; letter-spacing: 0.15em; }
 
-    /* ── ナビゲーション ── */
-    .global-nav {
-      background: #fff;
-      border-bottom: 1px solid #dde3ed;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    .sidebar-banner {
+      width: 100%; border: 1px solid #ccc; border-radius: 4px;
+      margin-bottom: 10px; overflow: hidden;
     }
-    .global-nav ul {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 0 24px;
-      display: flex;
-      list-style: none;
-      gap: 0;
+    .sidebar-banner img { width: 100%; display: block; }
+    .sidebar-banner-text {
+      background: #f0f5e8; border: 1px solid #b5c9a0;
+      border-radius: 4px; padding: 10px 12px; margin-bottom: 10px;
+      font-size: 0.78rem; color: #2d6a2d; text-align: center; font-weight: 700;
     }
-    .global-nav ul li a {
-      display: block;
-      padding: 14px 18px;
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: #1a3a6b;
-      text-decoration: none;
-      border-bottom: 3px solid transparent;
-      transition: border-color 0.2s, background 0.2s;
-    }
-    .global-nav ul li a:hover { border-bottom-color: #1a3a6b; background: #f0f4fb; }
 
-    /* ── メインレイアウト ── */
-    .page-wrapper {
-      max-width: 1100px;
-      margin: 32px auto;
-      padding: 0 24px;
+    .header-main {
+      position: relative;
+      background: linear-gradient(135deg, #87CEEB 0%, #98D8C8 40%, #7DBE8C 100%);
+      overflow: hidden; min-height: 320px;
+    }
+    .hero-img-placeholder {
+      width: 100%; height: 100%;
+      background: linear-gradient(160deg, #b8dff0 0%, #8ec8a0 50%, #6aad78 100%);
+      display: flex; align-items: center; justify-content: center;
+      min-height: 320px;
+    }
+    .hero-img-placeholder span { font-size: 8rem; opacity: 0.3; }
+
+    /* ── お知らせエリア ── */
+    .news-area {
       display: grid;
-      grid-template-columns: 1fr 380px;
-      gap: 28px;
-      align-items: start;
+      grid-template-columns: 260px 1fr;
     }
+    .news-left { background: #f8f8f8; border-right: 1px solid #ddd; padding: 0; }
+    .news-right { padding: 0; }
 
-    /* ── メインコンテンツ ── */
-    .main-content h2 {
-      font-size: 1.1rem;
-      color: #1a3a6b;
-      border-left: 4px solid #1a3a6b;
-      padding-left: 12px;
-      margin-bottom: 16px;
+    .news-block { margin-bottom: 0; }
+    .news-block-header {
+      padding: 10px 16px;
+      font-size: 0.9rem; font-weight: 700; color: #fff;
+      display: flex; justify-content: space-between; align-items: center;
     }
+    .news-block-header a { color: rgba(255,255,255,0.85); font-size: 0.75rem; text-decoration: none; }
+    .disaster { background: #8b1a1a; }
+    .notice   { background: #5a6e2d; }
 
-    .hero-banner {
-      background: linear-gradient(135deg, #1a3a6b 0%, #2d5aa0 100%);
-      border-radius: 12px;
-      padding: 28px;
-      color: #fff;
-      margin-bottom: 24px;
-    }
-    .hero-banner h2 {
-      font-size: 1.3rem;
-      border: none;
-      padding: 0;
-      color: #fff;
-      margin-bottom: 8px;
-    }
-    .hero-banner p { font-size: 0.9rem; opacity: 0.9; line-height: 1.7; }
+    .news-list { padding: 10px 16px; }
+    .news-list li { list-style: none; padding: 7px 0; border-bottom: 1px dashed #ccc; font-size: 0.8rem; }
+    .news-list li:last-child { border-bottom: none; }
+    .news-list .date { color: #666; margin-right: 8px; font-size: 0.75rem; }
+    .news-list a { color: #1a3a6b; text-decoration: none; }
+    .news-list a:hover { text-decoration: underline; }
 
-    .card-grid {
+    /* ── カテゴリーナビ ── */
+    .cat-nav {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
-      margin-bottom: 24px;
+      grid-template-columns: repeat(6, 1fr);
+      border-top: 3px solid #5a6e2d;
     }
-    .card {
-      background: #fff;
-      border: 1px solid #dde3ed;
-      border-radius: 10px;
-      padding: 18px;
-      transition: box-shadow 0.2s;
-      cursor: pointer;
+    .cat-nav a {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 16px 8px;
+      background: #4a5e25; color: #fff;
+      text-decoration: none; font-size: 0.82rem; font-weight: 700;
+      border-right: 1px solid #3a4e1a;
+      text-align: center; gap: 4px;
+      transition: background 0.2s;
     }
-    .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
-    .card-icon { font-size: 1.6rem; margin-bottom: 8px; }
-    .card h3 { font-size: 0.9rem; color: #1a3a6b; margin-bottom: 4px; }
-    .card p { font-size: 0.78rem; color: #5a6a7e; line-height: 1.5; }
+    .cat-nav a:last-child { border-right: none; }
+    .cat-nav a:hover { background: #3a4e1a; }
+    .cat-nav a span { font-size: 0.68rem; font-weight: 400; opacity: 0.8; }
 
-    .notice-box {
-      background: #fff;
-      border: 1px solid #dde3ed;
-      border-radius: 10px;
-      padding: 18px 20px;
+    /* ── コンテンツエリア ── */
+    .content-area {
+      max-width: 960px; margin: 28px auto; padding: 0 20px;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
     }
-    .notice-box ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-    .notice-box li {
-      display: flex; gap: 12px; align-items: flex-start;
-      padding-bottom: 10px; border-bottom: 1px solid #eef0f5;
-      font-size: 0.85rem;
+    .content-card {
+      border: 1px solid #ccc; border-radius: 6px; overflow: hidden;
     }
-    .notice-box li:last-child { border-bottom: none; padding-bottom: 0; }
-    .notice-date { color: #5a6a7e; font-size: 0.78rem; white-space: nowrap; min-width: 90px; }
-    .notice-tag {
-      background: #e8f0fb; color: #1a3a6b;
-      font-size: 0.7rem; font-weight: 700;
-      padding: 2px 7px; border-radius: 4px;
-      white-space: nowrap;
+    .content-card-header {
+      background: #5a6e2d; color: #fff;
+      padding: 10px 14px; font-size: 0.88rem; font-weight: 700;
     }
-
-    /* ── サイドバー（チャットボット） ── */
-    .sidebar h2 {
-      font-size: 1.05rem;
-      color: #1a3a6b;
-      border-left: 4px solid #c8a951;
-      padding-left: 12px;
-      margin-bottom: 14px;
-    }
-    .chatbot-wrap {
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-      transition: height 0.3s ease;
-    }
-    .chatbot-wrap iframe {
-      width: 100%;
-      height: 600px;
-      border: none;
-      display: block;
-      transition: height 0.3s ease;
-    }
+    .content-card-body { padding: 12px 14px; }
+    .content-card-body li { list-style: none; padding: 5px 0; border-bottom: 1px dotted #ccc; font-size: 0.8rem; }
+    .content-card-body li:last-child { border-bottom: none; }
+    .content-card-body a { color: #1a3a6b; text-decoration: none; }
+    .content-card-body a:hover { text-decoration: underline; }
 
     /* ── フッター ── */
     .site-footer {
-      background: #1a3a6b;
-      color: rgba(255,255,255,0.7);
-      text-align: center;
-      padding: 20px;
-      font-size: 0.78rem;
-      margin-top: 48px;
+      background: #3a4e1a; color: rgba(255,255,255,0.8);
+      padding: 20px; text-align: center; font-size: 0.78rem;
+      margin-top: 32px;
     }
 
+    /* ── チャットウィジェット ── */
+    #city-ai-btn {
+      position: fixed; bottom: 20px; right: 20px; z-index: 9998;
+      background: #2d5aa0; color: #fff;
+      border: none; border-radius: 50px;
+      padding: 12px 20px; font-size: 14px; font-weight: bold;
+      cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      font-family: inherit; transition: background 0.2s;
+      display: none;
+    }
+    #city-ai-btn:hover { background: #1a3a6b; }
+
+    #city-ai-panel {
+      position: fixed; bottom: 20px; right: 20px; z-index: 9999;
+      width: 380px;
+      border-radius: 14px; overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+      display: flex; flex-direction: column;
+    }
+    #city-ai-titlebar {
+      background: #2d5aa0; color: #fff;
+      padding: 10px 16px;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 13px; font-weight: bold; font-family: inherit;
+      flex-shrink: 0;
+    }
+    #city-ai-titlebar button {
+      background: none; border: none; color: #fff;
+      font-size: 16px; cursor: pointer; line-height: 1; padding: 0 4px;
+    }
+    #city-ai-panel iframe { width: 100%; border: none; display: block; height: 560px; }
+
     @media (max-width: 768px) {
-      .page-wrapper { grid-template-columns: 1fr; }
-      .header-nav { display: none; }
-      .card-grid { grid-template-columns: 1fr; }
+      .site-header { grid-template-columns: 1fr; }
+      .header-left { display: none; }
+      .news-area { grid-template-columns: 1fr; }
+      .cat-nav { grid-template-columns: repeat(3, 1fr); }
+      .content-area { grid-template-columns: 1fr; }
+      #city-ai-panel { width: calc(100vw - 20px); right: 10px; }
     }
   </style>
 </head>
 <body>
 
+  <!-- トップバー -->
+  <div class="topbar">
+    <a href="#">Foreign language</a>
+    <a href="#">閲覧支援</a>
+  </div>
+
   <!-- ヘッダー -->
   <header class="site-header">
-    <div class="header-inner">
-      <div class="logo">
-        <div class="logo-icon">🏛️</div>
-        <div class="logo-text">
-          <h1>〇〇市役所</h1>
-          <p>市民のみなさまへ</p>
-        </div>
+    <div class="header-left">
+      <div class="city-logo">
+        <div class="logo-circle">🏔️</div>
+        <h1>〇〇市</h1>
+        <p>MARUMARU CITY</p>
       </div>
-      <nav class="header-nav">
-        <a href="#">文字サイズ</a>
-        <a href="#">サイトマップ</a>
-        <a href="#">お問い合わせ</a>
-      </nav>
+      <div class="sidebar-banner-text">▲〇〇市の観光情報はこちら！▲</div>
+      <div class="sidebar-banner-text" style="background:#e8f0fb; border-color:#b0c4de; color:#1a3a6b;">
+        子育て応援サイト「つぼみねっと」
+      </div>
+      <div class="sidebar-banner-text" style="background:#f5f0e8; border-color:#c9b99a; color:#5a3a1a;">
+        移住・定住支援サイト「すんでみ〜ね」
+      </div>
+    </div>
+    <div class="header-main">
+      <div class="hero-img-placeholder"><span>🏔️</span></div>
     </div>
   </header>
 
-  <!-- グローバルナビ -->
-  <nav class="global-nav">
-    <ul>
-      <li><a href="#">くらし・手続き</a></li>
-      <li><a href="#">子育て・教育</a></li>
-      <li><a href="#">健康・福祉</a></li>
-      <li><a href="#">産業・まちづくり</a></li>
-      <li><a href="#">市政情報</a></li>
-      <li><a href="#">観光・文化</a></li>
-    </ul>
-  </nav>
-
-  <!-- メイン -->
-  <div class="page-wrapper">
-
-    <!-- 左：メインコンテンツ -->
-    <main class="main-content">
-
-      <div class="hero-banner">
-        <h2>〇〇市へようこそ</h2>
-        <p>各種手続きや市政情報を掲載しています。<br>右側のAIチャットボットにご質問いただくと、市のWebサイトを検索してお答えします。</p>
-      </div>
-
-      <h2>よく利用される手続き</h2>
-      <div class="card-grid">
-        <div class="card">
-          <div class="card-icon">📋</div>
-          <h3>転入・転出届</h3>
-          <p>引越しの際の住所変更手続きについて</p>
+  <!-- お知らせエリア -->
+  <div class="news-area">
+    <div class="news-left">
+      <div class="news-block">
+        <div class="news-block-header disaster">
+          防災情報 <a href="#">一覧ページへ ›</a>
         </div>
-        <div class="card">
-          <div class="card-icon">🪪</div>
-          <h3>マイナンバーカード</h3>
-          <p>申請・受取・暗証番号の変更など</p>
-        </div>
-        <div class="card">
-          <div class="card-icon">🏥</div>
-          <h3>国民健康保険</h3>
-          <p>加入・脱退・保険料の納付について</p>
-        </div>
-        <div class="card">
-          <div class="card-icon">🗑️</div>
-          <h3>ごみ・資源の出し方</h3>
-          <p>ごみ収集日程・分別方法について</p>
-        </div>
-      </div>
-
-      <h2>新着情報</h2>
-      <div class="notice-box">
-        <ul>
-          <li>
-            <span class="notice-date">2026年7月1日</span>
-            <span class="notice-tag">お知らせ</span>
-            <span>AIチャットボットを試験導入しました。ご意見・ご感想をお寄せください。</span>
-          </li>
-          <li>
-            <span class="notice-date">2026年6月28日</span>
-            <span class="notice-tag">手続き</span>
-            <span>マイナンバーカードの暗証番号初期化サービスを市役所窓口で開始しました。</span>
-          </li>
-          <li>
-            <span class="notice-date">2026年6月20日</span>
-            <span class="notice-tag">イベント</span>
-            <span>夏まつり2026の開催日程が決定しました。詳しくはイベント情報をご覧ください。</span>
-          </li>
-          <li>
-            <span class="notice-date">2026年6月15日</span>
-            <span class="notice-tag">窓口</span>
-            <span>市役所の開庁時間が変更になります。詳細はお知らせをご確認ください。</span>
-          </li>
+        <ul class="news-list">
+          <li><span class="date">2026年07月01日</span><a href="#">気象注意報</a></li>
+          <li><span class="date">2026年07月01日</span><a href="#">国民保護情報</a></li>
         </ul>
       </div>
-
-    </main>
-
-    <!-- 右：チャットボット -->
-    <aside class="sidebar">
-      <h2>💬 AIに質問する</h2>
-      <div class="chatbot-wrap">
-        <iframe
-          id="city-ai-iframe"
-          src="/"
-          title="AIチャットボット"
-          allow="clipboard-write"
-        ></iframe>
+    </div>
+    <div class="news-right">
+      <div class="news-block">
+        <div class="news-block-header notice">
+          重要なお知らせ <a href="#">一覧ページへ ›</a>
+        </div>
+        <ul class="news-list">
+          <li><span class="date">2026年05月25日</span><a href="#">令和8年度〇〇市職員採用試験【上級職行政】の実施について</a></li>
+          <li><span class="date">2026年04月27日</span><a href="#">令和8年度〇〇市職員通年採用試験の実施について</a></li>
+          <li><span class="date">2026年03月10日</span><a href="#">マイナンバーカード暗証番号の初期化・再設定サービスを開始しました</a></li>
+        </ul>
       </div>
-    </aside>
+    </div>
+  </div>
 
+  <!-- カテゴリーナビ -->
+  <nav class="cat-nav">
+    <a href="#">くらし・手続き<span>∨</span></a>
+    <a href="#">健康・福祉・感染症<span>∨</span></a>
+    <a href="#">子育て・教育<span>∨</span></a>
+    <a href="#">観光・文化財・ジオパーク<span>∨</span></a>
+    <a href="#">しごと・産業・まちづくり<span>∨</span></a>
+    <a href="#">行政情報<span>∨</span></a>
+  </nav>
+
+  <!-- コンテンツ -->
+  <div class="content-area">
+    <div class="content-card">
+      <div class="content-card-header">📋 よく利用される手続き</div>
+      <ul class="content-card-body">
+        <li><a href="#">転入・転出届</a></li>
+        <li><a href="#">マイナンバーカード申請</a></li>
+        <li><a href="#">国民健康保険の加入・脱退</a></li>
+        <li><a href="#">住民票の取得</a></li>
+        <li><a href="#">印鑑登録</a></li>
+      </ul>
+    </div>
+    <div class="content-card">
+      <div class="content-card-header">📅 イベント・お知らせ</div>
+      <ul class="content-card-body">
+        <li><a href="#">夏まつり2026開催のお知らせ</a></li>
+        <li><a href="#">市民講座の受付開始</a></li>
+        <li><a href="#">道路工事による通行規制</a></li>
+        <li><a href="#">ごみ収集日程の変更について</a></li>
+        <li><a href="#">市報〇〇7月号を掲載しました</a></li>
+      </ul>
+    </div>
+    <div class="content-card">
+      <div class="content-card-header">🔗 便利なリンク</div>
+      <ul class="content-card-body">
+        <li><a href="#">市役所窓口案内</a></li>
+        <li><a href="#">施設予約システム</a></li>
+        <li><a href="#">電子申請サービス</a></li>
+        <li><a href="#">ハザードマップ</a></li>
+        <li><a href="#">バス・交通情報</a></li>
+      </ul>
+    </div>
   </div>
 
   <!-- フッター -->
   <footer class="site-footer">
-    〒000-0000 〇〇県〇〇市〇〇町1-1-1　TEL: 000-000-0000<br>
+    〒000-0000 〇〇県〇〇市〇〇町1-1-1　TEL: 0000-00-0000<br>
     Copyright © 〇〇市役所 All Rights Reserved.
   </footer>
 
+  <!-- チャットウィジェット -->
+  <button id="city-ai-btn" onclick="cityAiOpen()" aria-label="AIチャットボット">
+    💬 AIに質問する
+  </button>
+
+  <div id="city-ai-panel">
+    <div id="city-ai-titlebar">
+      <span>🤖 AIチャットボット</span>
+      <button onclick="cityAiClose()" aria-label="閉じる">✕</button>
+    </div>
+    <iframe id="city-ai-iframe" src="/" title="AIチャットボット" allow="clipboard-write"></iframe>
+  </div>
+
   <script>
+    function cityAiClose() {
+      document.getElementById('city-ai-panel').style.display = 'none';
+      document.getElementById('city-ai-btn').style.display = 'block';
+    }
+    function cityAiOpen() {
+      document.getElementById('city-ai-panel').style.display = 'flex';
+      document.getElementById('city-ai-btn').style.display = 'none';
+    }
+
     window.addEventListener('message', function(e) {
       if (e.data && e.data.type === 'chatbot-resize') {
         var iframe = document.getElementById('city-ai-iframe');
-        if (iframe) iframe.style.height = e.data.height + 'px';
+        if (iframe) {
+          var h = Math.min(Math.max(e.data.height, 400), 700);
+          iframe.style.height = h + 'px';
+        }
       }
     });
   </script>
