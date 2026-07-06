@@ -140,7 +140,7 @@ body {
 
 .welcome-card strong { color: var(--primary); }
 
-.message { display: flex; flex-direction: column; gap: 6px; max-width: min(88%, 900px); }
+.message { display: flex; flex-direction: column; gap: 6px; max-width: min(88%, 900px); scroll-margin-top: 12px; }
 .message.user { align-self: flex-end; align-items: flex-end; }
 .message.assistant { align-self: flex-start; align-items: flex-start; }
 

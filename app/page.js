@@ -73,6 +73,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
   const chatRef = useRef(null);
+  const scrollToNewTurnRef = useRef(false);
 
   useEffect(() => {
     fetch('/api/config')
@@ -86,9 +87,16 @@ export default function Home() {
       .catch(() => {});
   }, []);
 
+  // 新しい質問を送信したときだけ、その質問を画面上部までスクロールする。
+  // 回答のストリーミング中に毎回一番下（参照ページ）までスクロールしてしまうと
+  // 回答の冒頭を読む前に下にずれてしまうため、ここでは追従スクロールしない。
   useEffect(() => {
-    if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
-  }, [messages, status]);
+    if (!scrollToNewTurnRef.current || !chatRef.current) return;
+    scrollToNewTurnRef.current = false;
+    const userMsgs = chatRef.current.querySelectorAll('.message.user');
+    const lastUserMsg = userMsgs[userMsgs.length - 1];
+    lastUserMsg?.scrollIntoView({ block: 'start' });
+  }, [messages.length]);
 
   // iframeとして埋め込まれた場合にbodyクラスを付与＋高さ通知
   // ただし ?noResize=1 が付いている場合（固定サイズのモーダル埋め込みなど）は
@@ -121,6 +129,7 @@ export default function Home() {
       .filter(m => m.text)
       .map(m => ({ role: m.role, text: m.text }));
 
+    scrollToNewTurnRef.current = true;
     setMessages(prev => [...prev, { role: 'user', text: message }]);
     setInput('');
     setLoading(true);

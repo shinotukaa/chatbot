@@ -204,6 +204,8 @@
       font-family: inherit; transition: transform 0.15s, box-shadow 0.15s;
     }
     .ai-chat-fab:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(0,0,0,0.32); }
+    /* モーダルを開いている間は半透明の背景幕越しにボタンが透けて見えるため非表示にする */
+    body.ai-chat-open .ai-chat-fab { display: none; }
 
     .ai-chat-modal {
       display: none; position: fixed; inset: 0; z-index: 9999;
@@ -407,10 +409,12 @@
   <script>
     function openChat() {
       document.getElementById('ai-chat-modal').classList.add('open');
+      document.body.classList.add('ai-chat-open');
       document.body.style.overflow = 'hidden';
     }
     function closeChat() {
       document.getElementById('ai-chat-modal').classList.remove('open');
+      document.body.classList.remove('ai-chat-open');
       document.body.style.overflow = '';
     }
     document.addEventListener('keydown', function (e) {
