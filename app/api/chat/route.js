@@ -46,6 +46,29 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// フォローアップ質問（例:「それは何歳まで？」）は指示語や省略を含み、
+// そのままではページ検索・リンク選定の手がかりにならない。履歴を踏まえて
+// 単独で意味が通じる質問文に書き直してから検索に使う。
+async function buildStandaloneQuestion(message, history, genAI) {
+  if (!genAI || history.length === 0) return message;
+  try {
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash-lite',
+      generationConfig: { maxOutputTokens: 80, temperature: 0 },
+    });
+    const historyText = history
+      .map(h => `${h.role === 'user' ? '市民' : 'アシスタント'}: ${h.text}`)
+      .join('\n');
+    const result = await model.generateContent(
+      `以下は市役所チャットボットの会話履歴と、それに続く市民の最新の質問です。最新の質問が指示語や省略により会話の文脈に依存している場合は、履歴を踏まえて、それ単独で意味が通じる質問文に書き直してください。文脈に依存していなければそのまま出力してください。書き直した質問文のみを出力し、説明は不要です。\n\n会話履歴:\n${historyText}\n\n最新の質問: ${message}`
+    );
+    const rewritten = result.response.text().trim();
+    return rewritten || message;
+  } catch {
+    return message;
+  }
+}
+
 function isRetryable(err) {
   const status = err?.status || err?.response?.status;
   return status === 429 || status === 503 || status >= 500;
@@ -106,12 +129,14 @@ export async function POST(req) {
       };
 
       try {
+        const retrievalQuery = await buildStandaloneQuestion(message, history, genAI);
+
         const useCSE = process.env.SERP_API_KEY;
         const { pages } = useCSE
-          ? await searchSite(targetUrl, message, (statusMessage) => {
+          ? await searchSite(targetUrl, retrievalQuery, (statusMessage) => {
               send('status', { message: statusMessage });
             }, genAI)
-          : await crawlSite(targetUrl, message, (statusMessage) => {
+          : await crawlSite(targetUrl, retrievalQuery, (statusMessage) => {
               send('status', { message: statusMessage });
             }, genAI);
 
