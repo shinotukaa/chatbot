@@ -91,9 +91,13 @@ export default function Home() {
   }, [messages, status]);
 
   // iframeとして埋め込まれた場合にbodyクラスを付与＋高さ通知
+  // ただし ?noResize=1 が付いている場合（固定サイズのモーダル埋め込みなど）は
+  // 高さを伸ばさず、iframe自身の内部スクロールに任せる
   useEffect(() => {
     const inIframe = window.self !== window.top;
     if (!inIframe) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('noResize') === '1') return;
     document.body.classList.add('in-iframe');
     const sendHeight = () => {
       const h = document.body.scrollHeight;
