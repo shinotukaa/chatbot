@@ -74,6 +74,8 @@ export default function Home() {
   const [status, setStatus] = useState('');
   const chatRef = useRef(null);
   const scrollToNewTurnRef = useRef(false);
+  const textareaRef = useRef(null);
+  const [inputFocused, setInputFocused] = useState(false);
   // ?noResize=1（モーダル埋め込みなど）のときは、埋め込み先が独自のタイトルバーを
   // 持っている前提で、重複するヘッダー（アイコン＋タイトル）を非表示にする
   const [compactHeader, setCompactHeader] = useState(false);
@@ -136,6 +138,7 @@ export default function Home() {
     scrollToNewTurnRef.current = true;
     setMessages(prev => [...prev, { role: 'user', text: message }]);
     setInput('');
+    textareaRef.current?.blur();
     setLoading(true);
     setStatus('市役所サイトを確認中...');
 
@@ -255,9 +258,6 @@ export default function Home() {
                 <span className="avatar-name">{config.characterName || 'AIアシスタント'}</span>
               </div>
             )}
-            {m.role === 'user' && (
-              <div className="message-label">市民</div>
-            )}
             {m.html ? (
               <div className="bubble" dangerouslySetInnerHTML={{ __html: m.html }} />
             ) : (
@@ -296,10 +296,13 @@ export default function Home() {
         <form onSubmit={handleSubmit}>
           <div className="input-row">
             <textarea
-              className="message-input"
-              rows={3}
+              ref={textareaRef}
+              className={`message-input ${inputFocused ? 'expanded' : ''}`}
+              rows={1}
               value={input}
               onChange={e => setInput(e.target.value)}
+              onFocus={() => setInputFocused(true)}
+              onBlur={() => setInputFocused(false)}
               onKeyDown={e => {
                 if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(e); }
               }}

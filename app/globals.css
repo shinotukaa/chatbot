@@ -144,14 +144,6 @@ body {
 .message.user { align-self: flex-end; align-items: flex-end; }
 .message.assistant { align-self: flex-start; align-items: flex-start; }
 
-.message-label {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  padding: 0 4px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-}
-
 .bubble {
   padding: 14px 18px;
   border-radius: 14px;
@@ -296,8 +288,12 @@ body {
   line-height: 1.5;
   color: var(--text);
   background: #fff;
-  transition: border-color 0.2s;
+  min-height: 46px;
+  transition: border-color 0.2s, min-height 0.15s ease;
 }
+
+/* 入力中（フォーカス時）だけ大きくし、送信後は1行分に縮めて回答欄を広く見せる */
+.message-input.expanded { min-height: 84px; }
 
 .message-input:focus { outline: none; border-color: var(--primary); }
 .message-input:disabled { background: #f0f2f5; }
