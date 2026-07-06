@@ -74,6 +74,9 @@ export default function Home() {
   const [status, setStatus] = useState('');
   const chatRef = useRef(null);
   const scrollToNewTurnRef = useRef(false);
+  // ?noResize=1（モーダル埋め込みなど）のときは、埋め込み先が独自のタイトルバーを
+  // 持っている前提で、重複するヘッダー（アイコン＋タイトル）を非表示にする
+  const [compactHeader, setCompactHeader] = useState(false);
 
   useEffect(() => {
     fetch('/api/config')
@@ -85,6 +88,7 @@ export default function Home() {
         setConfig(c => ({ ...c, ...d, ...(overrideUrl ? { siteUrl: overrideUrl } : {}) }));
       })
       .catch(() => {});
+    setCompactHeader(new URLSearchParams(window.location.search).get('noResize') === '1');
   }, []);
 
   // 新しい質問を送信したときだけ、その質問を画面上部までスクロールする。
@@ -216,19 +220,21 @@ export default function Home() {
 
   return (
     <div className="chat-layout">
-      <header className="site-header">
-        <div className="header-inner">
-          {config.characterImageUrl ? (
-            <img src={config.characterImageUrl} alt={config.characterName || 'キャラクター'} className="header-character" />
-          ) : (
-            <div className="header-icon">🏛️</div>
-          )}
-          <div className="header-text">
-            <h1>{config.siteName}</h1>
-            <p>AIがWebサイトを検索して、ご質問にお答えします</p>
+      {!compactHeader && (
+        <header className="site-header">
+          <div className="header-inner">
+            {config.characterImageUrl ? (
+              <img src={config.characterImageUrl} alt={config.characterName || 'キャラクター'} className="header-character" />
+            ) : (
+              <div className="header-icon">🏛️</div>
+            )}
+            <div className="header-text">
+              <h1>{config.siteName}</h1>
+              <p>AIがWebサイトを検索して、ご質問にお答えします</p>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
 
       <div className="chat-body" ref={chatRef}>
