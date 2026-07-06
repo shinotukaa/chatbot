@@ -6,28 +6,64 @@ const DEFAULT_CONFIG = {
   siteName: '市役所AIチャットボット',
   siteUrl: '',
   welcomeMessage: 'ご質問をどうぞ。市のWebサイトを直接調べて、丁寧にお答えします。',
-  characterName: '',
+  characterName: 'amie',
   characterImageUrl: '',
 };
 
+function escapeHtml(text) {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
 
-function renderMarkdown(text) {
-  const escaped = text
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/## (.+)/g, '<h2>$1</h2>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-
-  // Single pass over markdown links and bare URLs so a bare-URL match
-  // never re-wraps a URL already placed inside an href="..." attribute.
-  const linked = escaped.replace(
+// Applies inline formatting (bold, links) to a single already-escaped line.
+// Escaping happens before this runs so a bare-URL match can never re-wrap a
+// URL already placed inside an href="..." attribute.
+function renderInline(escapedLine) {
+  const bold = escapedLine.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  return bold.replace(
     /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)|(https?:\/\/[^\s<&]+)/g,
     (match, linkText, linkUrl, bareUrl) => {
       if (linkUrl) return `<a href="${linkUrl}" target="_blank" rel="noopener">${linkText}</a>`;
       return `<a href="${bareUrl}" target="_blank" rel="noopener">${bareUrl}</a>`;
     }
   );
+}
 
-  return linked.replace(/\n/g, '<br>');
+// The model is instructed to avoid Markdown, but this still tolerates stray
+// #/##/### headings, "- "/"・" bullets and "1. " numbered lists so the raw
+// marks never leak into the UI as literal characters.
+function renderMarkdown(text) {
+  const lines = escapeHtml(text).split('\n');
+  const out = [];
+  let listType = null;
+
+  const closeList = () => {
+    if (listType) { out.push(listType === 'ol' ? '</ol>' : '</ul>'); listType = null; }
+  };
+
+  for (const line of lines) {
+    const headingMatch = line.match(/^#{1,6}\s+(.*)/);
+    const numberedMatch = line.match(/^\d+[.)]\s+(.*)/);
+    const bulletMatch = line.match(/^(?:[-*]\s+|・\s*)(.*)/);
+
+    if (headingMatch) {
+      closeList();
+      out.push(`<h2>${renderInline(headingMatch[1])}</h2>`);
+    } else if (numberedMatch) {
+      if (listType !== 'ol') { closeList(); out.push('<ol>'); listType = 'ol'; }
+      out.push(`<li>${renderInline(numberedMatch[1])}</li>`);
+    } else if (bulletMatch) {
+      if (listType !== 'ul') { closeList(); out.push('<ul>'); listType = 'ul'; }
+      out.push(`<li>${renderInline(bulletMatch[1])}</li>`);
+    } else if (line.trim() === '') {
+      closeList();
+    } else {
+      closeList();
+      out.push(`<p>${renderInline(line)}</p>`);
+    }
+  }
+  closeList();
+
+  return out.join('');
 }
 
 export default function Home() {
@@ -76,6 +112,11 @@ export default function Home() {
     const message = input.trim();
     if (!message || loading) return;
 
+    // 直前までの会話を履歴としてサーバーに渡し、文脈を踏まえた回答にする
+    const history = messages
+      .filter(m => m.text)
+      .map(m => ({ role: m.role, text: m.text }));
+
     setMessages(prev => [...prev, { role: 'user', text: message }]);
     setInput('');
     setLoading(true);
@@ -88,7 +129,7 @@ export default function Home() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, url: targetUrl || undefined }),
+        body: JSON.stringify({ message, url: targetUrl || undefined, history }),
       });
 
       if (!res.ok) {
@@ -135,7 +176,7 @@ export default function Home() {
             // USED_PAGES:タグを表示から除去
             const displayText = fullText.replace(/\s*USED_PAGES:\[[\s\S]*?\]/, '');
             setMessages(prev => prev.map((m, i) =>
-              i === aiIndex ? { ...m, html: renderMarkdown(displayText) } : m
+              i === aiIndex ? { ...m, text: displayText, html: renderMarkdown(displayText) } : m
             ));
           } else if (eventType === 'done') {
             setStatus('');
