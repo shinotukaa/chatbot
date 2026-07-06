@@ -7,7 +7,7 @@ const DEFAULT_CONFIG = {
   siteUrl: '',
   welcomeMessage: 'ご質問をどうぞ。市のWebサイトを直接調べて、丁寧にお答えします。',
   characterName: 'amie',
-  characterImageUrl: '',
+  characterImageUrl: '/1-4.png',
 };
 
 function escapeHtml(text) {
