@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>黒部市公式サイト（デモ）</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Hiragino Sans', 'Meiryo', 'Yu Gothic', sans-serif; background: #fff; color: #222; }
+
+    /* ── トップバー ── */
+    .topbar {
+      background: #003f7f;
+      display: flex; justify-content: flex-end; align-items: center;
+      padding: 4px 16px; gap: 0;
+    }
+    .topbar a {
+      color: rgba(255,255,255,0.85); font-size: 0.72rem;
+      text-decoration: none; padding: 4px 12px;
+      border-left: 1px solid rgba(255,255,255,0.25);
+    }
+    .topbar a:first-child { border-left: none; }
+    .topbar a:hover { color: #fff; }
+
+    /* ── ヘッダー ── */
+    .site-header {
+      background: #fff;
+      border-bottom: 3px solid #003f7f;
+      padding: 0;
+    }
+    .header-inner {
+      max-width: 1100px; margin: 0 auto;
+      padding: 12px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo { display: flex; align-items: center; gap: 14px; text-decoration: none; }
+    .logo-mark {
+      width: 60px; height: 60px;
+      background: #003f7f; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; color: #fff; flex-shrink: 0;
+    }
+    .logo-text h1 { font-size: 1.5rem; font-weight: 900; color: #003f7f; letter-spacing: 0.05em; }
+    .logo-text p { font-size: 0.68rem; color: #555; letter-spacing: 0.12em; margin-top: 2px; }
+
+    .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+    .header-search {
+      display: flex; gap: 0;
+    }
+    .header-search input {
+      border: 1px solid #ccc; border-right: none;
+      padding: 6px 12px; font-size: 0.82rem;
+      border-radius: 3px 0 0 3px; width: 220px;
+      font-family: inherit;
+    }
+    .header-search button {
+      background: #003f7f; color: #fff; border: none;
+      padding: 6px 14px; font-size: 0.82rem; cursor: pointer;
+      border-radius: 0 3px 3px 0; font-family: inherit;
+    }
+    .header-links { display: flex; gap: 16px; }
+    .header-links a { font-size: 0.75rem; color: #003f7f; text-decoration: none; }
+    .header-links a:hover { text-decoration: underline; }
+
+    /* ── グローバルナビ ── */
+    .global-nav { background: #003f7f; }
+    .global-nav ul {
+      max-width: 1100px; margin: 0 auto; padding: 0 24px;
+      display: flex; list-style: none;
+    }
+    .global-nav ul li a {
+      display: block; padding: 13px 16px;
+      color: rgba(255,255,255,0.9); text-decoration: none;
+      font-size: 0.85rem; font-weight: 600;
+      border-right: 1px solid rgba(255,255,255,0.15);
+      transition: background 0.2s;
+    }
+    .global-nav ul li:first-child a { border-left: 1px solid rgba(255,255,255,0.15); }
+    .global-nav ul li a:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+    /* ── ヒーローバナー ── */
+    .hero {
+      position: relative; overflow: hidden;
+      background: linear-gradient(160deg, #d0e8f5 0%, #a8d4ec 40%, #6ab0d4 70%, #003f7f 100%);
+      min-height: 280px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hero-content { text-align: center; color: #fff; padding: 40px 24px; }
+    .hero-content h2 { font-size: 1.8rem; font-weight: 900; text-shadow: 0 2px 8px rgba(0,0,50,0.3); margin-bottom: 8px; }
+    .hero-content p { font-size: 0.9rem; opacity: 0.9; text-shadow: 0 1px 4px rgba(0,0,50,0.3); }
+    .hero-emoji { font-size: 5rem; opacity: 0.2; position: absolute; right: 10%; top: 50%; transform: translateY(-50%); }
+
+    /* ── メインコンテンツ ── */
+    .main-wrapper {
+      max-width: 1100px; margin: 0 auto; padding: 28px 24px;
+      display: grid; grid-template-columns: 1fr 360px; gap: 28px; align-items: start;
+    }
+
+    /* お知らせ */
+    .section-title {
+      font-size: 1rem; font-weight: 700; color: #003f7f;
+      border-left: 4px solid #003f7f; padding-left: 10px;
+      margin-bottom: 14px;
+    }
+
+    .news-tabs { display: flex; gap: 0; margin-bottom: 0; }
+    .news-tab {
+      padding: 8px 18px; font-size: 0.82rem; font-weight: 700;
+      border: 1px solid #ccc; border-bottom: none;
+      background: #f0f4f8; color: #555; cursor: pointer;
+      border-radius: 4px 4px 0 0;
+    }
+    .news-tab.active { background: #003f7f; color: #fff; border-color: #003f7f; }
+
+    .news-box {
+      border: 1px solid #ccc; border-radius: 0 4px 4px 4px;
+      padding: 16px; margin-bottom: 24px;
+    }
+    .news-list { list-style: none; }
+    .news-list li {
+      display: flex; gap: 12px; padding: 8px 0;
+      border-bottom: 1px dotted #ccc; font-size: 0.82rem;
+      align-items: baseline;
+    }
+    .news-list li:last-child { border-bottom: none; }
+    .news-date { color: #555; white-space: nowrap; min-width: 100px; font-size: 0.78rem; }
+    .news-cat {
+      background: #003f7f; color: #fff;
+      font-size: 0.68rem; padding: 1px 7px; border-radius: 3px;
+      white-space: nowrap; font-weight: 700;
+    }
+    .news-cat.event { background: #c07000; }
+    .news-cat.info  { background: #2a7a2a; }
+    .news-list a { color: #003f7f; text-decoration: none; }
+    .news-list a:hover { text-decoration: underline; }
+
+    /* カテゴリーアイコン */
+    .category-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+      margin-bottom: 24px;
+    }
+    .cat-item {
+      border: 1px solid #ccc; border-radius: 8px; padding: 14px 10px;
+      text-align: center; text-decoration: none; color: #003f7f;
+      transition: box-shadow 0.2s, background 0.2s;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+    }
+    .cat-item:hover { box-shadow: 0 4px 12px rgba(0,63,127,0.15); background: #f0f6fb; }
+    .cat-item .icon { font-size: 1.8rem; }
+    .cat-item span { font-size: 0.78rem; font-weight: 700; line-height: 1.3; }
+
+    /* ── サイドバー（チャットボット） ── */
+    .sidebar-title {
+      font-size: 1rem; font-weight: 700; color: #003f7f;
+      border-left: 4px solid #c07000; padding-left: 10px;
+      margin-bottom: 12px;
+    }
+    .chatbot-wrap {
+      border-radius: 10px; overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.13);
+    }
+    .chatbot-wrap iframe {
+      width: 100%; border: none; display: block; height: 580px;
+      transition: height 0.3s ease;
+    }
+    .chatbot-note {
+      font-size: 0.72rem; color: #777; margin-top: 8px; line-height: 1.5;
+    }
+
+    /* ── フッター ── */
+    .site-footer {
+      background: #003f7f; color: rgba(255,255,255,0.75);
+      padding: 24px; margin-top: 40px;
+    }
+    .footer-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 12px;
+    }
+    .footer-inner p { font-size: 0.78rem; }
+    .footer-links { display: flex; gap: 16px; }
+    .footer-links a { color: rgba(255,255,255,0.7); font-size: 0.75rem; text-decoration: none; }
+    .footer-links a:hover { color: #fff; }
+
+    @media (max-width: 768px) {
+      .main-wrapper { grid-template-columns: 1fr; }
+      .category-grid { grid-template-columns: repeat(2, 1fr); }
+      .header-right { display: none; }
+      .global-nav ul { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- トップバー -->
+  <div class="topbar">
+    <a href="#">Foreign language</a>
+    <a href="#">文字サイズ変更</a>
+    <a href="#">色の変更</a>
+    <a href="#">サイトマップ</a>
+  </div>
+
+  <!-- ヘッダー -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="logo" href="#">
+        <div class="logo-mark">🏔️</div>
+        <div class="logo-text">
+          <h1>黒部市</h1>
+          <p>KUROBE CITY</p>
+        </div>
+      </a>
+      <div class="header-right">
+        <div class="header-search">
+          <input type="text" placeholder="サイト内検索">
+          <button>検索</button>
+        </div>
+        <div class="header-links">
+          <a href="#">くらしの手続きガイド</a>
+          <a href="#">施設予約</a>
+          <a href="#">電子申請</a>
+          <a href="#">お問い合わせ</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- グローバルナビ -->
+  <nav class="global-nav">
+    <ul>
+      <li><a href="#">くらし・手続き</a></li>
+      <li><a href="#">子育て・教育</a></li>
+      <li><a href="#">健康・福祉</a></li>
+      <li><a href="#">産業・観光</a></li>
+      <li><a href="#">まちづくり</a></li>
+      <li><a href="#">市政情報</a></li>
+      <li><a href="#">黒部市について</a></li>
+    </ul>
+  </nav>
+
+  <!-- ヒーロー -->
+  <div class="hero">
+    <div class="hero-content">
+      <h2>黒部市へようこそ</h2>
+      <p>雄大な北アルプスと清流・黒部川が育む、自然豊かなまち</p>
+    </div>
+    <div class="hero-emoji">🏔️</div>
+  </div>
+
+  <!-- メイン -->
+  <div class="main-wrapper">
+
+    <main>
+      <!-- カテゴリー -->
+      <p class="section-title">よく利用される手続き</p>
+      <div class="category-grid">
+        <a class="cat-item" href="#"><div class="icon">📋</div><span>転入・転出</span></a>
+        <a class="cat-item" href="#"><div class="icon">🪪</div><span>マイナンバー</span></a>
+        <a class="cat-item" href="#"><div class="icon">🏥</div><span>国民健康保険</span></a>
+        <a class="cat-item" href="#"><div class="icon">👶</div><span>子育て支援</span></a>
+        <a class="cat-item" href="#"><div class="icon">🏫</div><span>学校・教育</span></a>
+        <a class="cat-item" href="#"><div class="icon">🗑️</div><span>ごみ・リサイクル</span></a>
+        <a class="cat-item" href="#"><div class="icon">🏗️</div><span>建築・開発</span></a>
+        <a class="cat-item" href="#"><div class="icon">💰</div><span>税金・保険料</span></a>
+      </div>
+
+      <!-- お知らせ -->
+      <p class="section-title">新着情報</p>
+      <div class="news-tabs">
+        <div class="news-tab active">すべて</div>
+        <div class="news-tab">お知らせ</div>
+        <div class="news-tab">イベント</div>
+      </div>
+      <div class="news-box">
+        <ul class="news-list">
+          <li>
+            <span class="news-date">2026年07月01日</span>
+            <span class="news-cat">お知らせ</span>
+            <a href="#">AIチャットボットの試験運用を開始しました</a>
+          </li>
+          <li>
+            <span class="news-date">2026年06月28日</span>
+            <span class="news-cat event">イベント</span>
+            <a href="#">黒部名水マラソン2026 参加者募集のお知らせ</a>
+          </li>
+          <li>
+            <span class="news-date">2026年06月20日</span>
+            <span class="news-cat info">手続き</span>
+            <a href="#">マイナンバーカード申請サポートの受付を開始しました</a>
+          </li>
+          <li>
+            <span class="news-date">2026年06月15日</span>
+            <span class="news-cat">お知らせ</span>
+            <a href="#">令和8年度市民税・県民税納税通知書を発送しました</a>
+          </li>
+          <li>
+            <span class="news-date">2026年06月01日</span>
+            <span class="news-cat event">イベント</span>
+            <a href="#">黒部峡谷トロッコ電車 今季の運行スケジュール公開</a>
+          </li>
+        </ul>
+      </div>
+    </main>
+
+    <!-- サイドバー：チャットボット -->
+    <aside>
+      <p class="sidebar-title">💬 AIに質問する</p>
+      <div class="chatbot-wrap">
+        <iframe
+          id="city-ai-iframe"
+          src="/?url=https://www.city.kurobe.toyama.jp/top.aspx"
+          title="黒部市AIチャットボット"
+          allow="clipboard-write"
+        ></iframe>
+      </div>
+      <p class="chatbot-note">※ AIが黒部市の公式サイトを検索してお答えします。回答内容の正確性は公式窓口でご確認ください。</p>
+    </aside>
+
+  </div>
+
+  <!-- フッター -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>〒938-8555 富山県黒部市三日市1301番地　TEL: 0765-54-2111<br>
+      Copyright © 黒部市 All Rights Reserved.</p>
+      <div class="footer-links">
+        <a href="#">プライバシーポリシー</a>
+        <a href="#">サイトマップ</a>
+        <a href="#">お問い合わせ</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'chatbot-resize') {
+        var iframe = document.getElementById('city-ai-iframe');
+        if (iframe) {
+          var h = Math.max(e.data.height, 400);
+          iframe.style.height = h + 'px';
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>

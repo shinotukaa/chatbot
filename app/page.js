@@ -39,10 +39,14 @@ export default function Home() {
   const chatRef = useRef(null);
 
   useEffect(() => {
-    // Load config from server-side environment variables
     fetch('/api/config')
       .then(r => r.json())
-      .then(d => setConfig(c => ({ ...c, ...d })))
+      .then(d => {
+        // ?url= クエリパラメーターで対象URLを上書き可能
+        const params = new URLSearchParams(window.location.search);
+        const overrideUrl = params.get('url');
+        setConfig(c => ({ ...c, ...d, ...(overrideUrl ? { siteUrl: overrideUrl } : {}) }));
+      })
       .catch(() => {});
   }, []);
 
